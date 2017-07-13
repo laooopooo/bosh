@@ -4,11 +4,7 @@ module Bosh::Director
   module Api::Controllers
     class ConfigsController < BaseController
 
-      get '/', scope: :read do
-        if params['type'].nil? || params['type'].empty?
-          raise ValidationMissingField, "'type' is required"
-        end
-
+      get '/:type', scope: :read do
         if params['limit'].nil? || params['limit'].empty?
           raise ValidationMissingField, "'limit' is required"
         end

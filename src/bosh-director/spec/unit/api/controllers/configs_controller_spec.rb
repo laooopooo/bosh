@@ -34,29 +34,33 @@ module Bosh::Director
           newest_config = 'new_config'
           Models::Config.make(
             content: newest_config,
-            created_at: Time.now - 1,
+            created_at: Time.now - 1
           )
 
-          get '/?type=my-type&name=some-name&limit=2&content=true'
+          get '/my-type?name=some-name&limit=2&content=true'
 
           expect(last_response.status).to eq(200)
           expect(JSON.parse(last_response.body).count).to eq(2)
           expect(JSON.parse(last_response.body).first['content']).to eq(newest_config)
         end
 
-        context 'when name is not set' do
-          it 'returns the defaults only' do
+        context 'when name is missing from the params' do
+          before do
             Models::Config.make(
                 name: 'with-some-name',
-                content: 'some_config',
+                content: 'some_config'
             )
 
             Models::Config.make(
                 name: '',
-                content: 'config-with-empty-name',
+                content: 'config-with-empty-name'
             )
+          end
 
-            get '/?type=my-type&limit=10&content=true'
+          let(:url_path) { '/my-type?limit=10&content=true' }
+
+          it 'uses the default name' do
+            get url_path
 
             expect(last_response.status).to eq(200)
             expect(JSON.parse(last_response.body).count).to eq(1)
@@ -66,7 +70,7 @@ module Bosh::Director
 
         context 'when not all required parameters are provided' do
           context "when 'limit' is not specified" do
-            let(:url_path) { '/?type=my-type&name=some-name&content=true' }
+            let(:url_path) { '/my-type?name=some-name&content=true' }
 
             it 'returns STATUS 400' do
               get url_path
@@ -77,7 +81,7 @@ module Bosh::Director
           end
 
           context "when 'limit' value is not given" do
-            let(:url_path) { '/?type=my-type&name=some-name&limit=' }
+            let(:url_path) { '/my-type?name=some-name&limit=' }
 
             it 'returns STATUS 400' do
               get url_path
@@ -88,7 +92,7 @@ module Bosh::Director
           end
 
           context "when 'limit' value is not an integer" do
-            let(:url_path) { '/?type=my-type&name=some-name&limit=foo' }
+            let(:url_path) { '/my-type?name=some-name&limit=foo' }
 
             it 'returns STATUS 400' do
               get url_path
@@ -101,22 +105,10 @@ module Bosh::Director
           context "when 'type' is not specified" do
             let(:url_path) { '/?name=some-name&limit=1' }
 
-            it 'returns STATUS 400' do
+            it 'returns STATUS 404' do
               get url_path
 
-              expect(last_response.status).to eq(400)
-              expect(last_response.body).to eq('{"code":40001,"description":"\'type\' is required"}')
-            end
-          end
-
-          context "when 'type' value is not given" do
-            let(:url_path) { '/?name=some-name&limit=1&type=' }
-
-            it 'returns STATUS 400' do
-              get url_path
-
-              expect(last_response.status).to eq(400)
-              expect(last_response.body).to eq('{"code":40001,"description":"\'type\' is required"}')
+              expect(last_response.status).to eq(404)
             end
           end
         end
@@ -132,7 +124,7 @@ module Bosh::Director
         before { basic_authorize('reader', 'reader') }
 
         it 'permits access' do
-          expect(get('/?type=my-type&limit=1').status).to eq(200)
+          expect(get('/my-type?limit=1').status).to eq(200)
         end
       end
     end
