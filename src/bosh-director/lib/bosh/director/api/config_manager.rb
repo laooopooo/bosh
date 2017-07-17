@@ -3,12 +3,12 @@ module Bosh
     module Api
       class ConfigManager
         def create(type, name, config_yaml)
-          cloud_config = Bosh::Director::Models::Config.new(
+          config = Bosh::Director::Models::Config.new(
               type: type,
               name: name,
               content: config_yaml
           )
-          cloud_config.save
+          config.save
         end
 
         def find_by_type_and_name(type, name = nil, limit:, content:)
