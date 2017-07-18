@@ -18,8 +18,7 @@ module Bosh::Director
         configs = Bosh::Director::Api::ConfigManager.new.find_by_type_and_name(
             params['type'],
             params['name'],
-            limit: limit,
-            content: true
+            limit: limit
         )
 
         result = configs.map do |config|

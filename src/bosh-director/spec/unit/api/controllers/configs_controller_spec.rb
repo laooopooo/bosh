@@ -37,7 +37,7 @@ module Bosh::Director
             created_at: Time.now - 1
           )
 
-          get '/my-type?name=some-name&limit=2&content=true'
+          get '/my-type?name=some-name&limit=2'
 
           expect(last_response.status).to eq(200)
           expect(JSON.parse(last_response.body).count).to eq(2)
@@ -57,7 +57,7 @@ module Bosh::Director
             )
           end
 
-          let(:url_path) { '/my-type?limit=10&content=true' }
+          let(:url_path) { '/my-type?limit=10' }
 
           it 'uses the default name' do
             get url_path
@@ -70,7 +70,7 @@ module Bosh::Director
 
         context 'when not all required parameters are provided' do
           context "when 'limit' is not specified" do
-            let(:url_path) { '/my-type?name=some-name&content=true' }
+            let(:url_path) { '/my-type?name=some-name' }
 
             it 'returns STATUS 400' do
               get url_path

@@ -19,30 +19,13 @@ describe Bosh::Director::Api::ConfigManager do
   end
 
   describe '#find_by_type_and_name' do
-    context 'when content should be included' do
-      let(:content) { true }
+    it 'returns the content' do
+      Bosh::Director::Models::Config.make(content: 'some-yaml')
 
-      it 'returns the content' do
-        Bosh::Director::Models::Config.make(content: 'some-yaml')
+      configs = manager.find_by_type_and_name(type, name, limit: 1)
 
-        configs = manager.find_by_type_and_name(type, name, limit: 1, content: content)
-
-        expect(configs.count).to eq(1)
-        expect(configs.first.content).to eq('some-yaml')
-      end
-    end
-
-    context 'when content should not be included' do
-      let(:content) { false }
-
-      it 'returns config without content' do
-        Bosh::Director::Models::Config.make(content: 'some-yaml')
-
-        configs = manager.find_by_type_and_name(type, name, limit: 1, content: content)
-
-        expect(configs.count).to eq(1)
-        expect(configs.first.content).to eq(nil)
-      end
+      expect(configs.count).to eq(1)
+      expect(configs.first.content).to eq('some-yaml')
     end
 
     it 'returns the specified number of configs' do
@@ -54,7 +37,7 @@ describe Bosh::Director::Api::ConfigManager do
         created_at: Time.now - 2.days
       )
 
-      configs = manager.find_by_type_and_name(type, name, limit: 1, content: false)
+      configs = manager.find_by_type_and_name(type, name, limit: 1)
 
       expect(configs.count).to eq(1)
       expect(configs.first.id).to eq(second_config.id)
@@ -70,7 +53,7 @@ describe Bosh::Director::Api::ConfigManager do
           created_at: Time.now - 2.days
         )
 
-        configs = manager.find_by_type_and_name(type, name, limit: 10, content: false)
+        configs = manager.find_by_type_and_name(type, name, limit: 10)
 
         expect(configs.count).to eq(2)
         expect(configs[0].id).to eq(new_config.id)
@@ -80,7 +63,7 @@ describe Bosh::Director::Api::ConfigManager do
 
     context 'when there are no configs with given type and name' do
       it 'returns an empty array' do
-        configs = manager.find_by_type_and_name(type, name, limit: 1, content: false)
+        configs = manager.find_by_type_and_name(type, name, limit: 1)
 
         expect(configs.class).to be(Array)
         expect(configs).to eq([])
@@ -97,13 +80,13 @@ describe Bosh::Director::Api::ConfigManager do
       end
 
       it 'uses the default empty string' do
-        configs = manager.find_by_type_and_name(type, limit: 1, content: false)
+        configs = manager.find_by_type_and_name(type, limit: 1)
         expect(configs.count).to eq(1)
         expect(configs[0].id).to eq(empty_string_name_config.id)
       end
 
       it 'uses the default empty string' do
-        configs = manager.find_by_type_and_name(type, nil, limit: 1, content: false)
+        configs = manager.find_by_type_and_name(type, nil, limit: 1)
         expect(configs.count).to eq(1)
         expect(configs[0].id).to eq(empty_string_name_config.id)
       end
