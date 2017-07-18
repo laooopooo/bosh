@@ -20,6 +20,42 @@ module Bosh::Director
           authorize('admin', 'admin')
         end
 
+        it 'returns the list of configs' do
+          Models::Config.make
+          Models::Config.make
+          Models::Config.make(name: 'new-name')
+          Models::Config.make(type: 'new-type')
+
+          get '/'
+
+          expect(last_response.status).to eq(200)
+          expect(JSON.parse(last_response.body).count).to eq(3)
+          expect(JSON.parse(last_response.body).first['name']).to eq('some-name')
+        end
+
+        it 'returns an empty list if nothing matches' do
+          get '/'
+
+          expect(last_response.status).to eq(200)
+          result = JSON.parse(last_response.body)
+          expect(result.class).to be(Array)
+          expect(result).to eq([])
+        end
+      end
+
+      context 'without an authenticated user' do
+        it 'denies access' do
+          expect(get('/').status).to eq(401)
+        end
+      end
+    end
+
+    describe 'GET', '/:type' do
+      context 'with authenticated admin user' do
+        before(:each) do
+          authorize('admin', 'admin')
+        end
+
         it 'returns the number of configs specified by ?limit' do
           Models::Config.make(
             content: 'some-yaml',
@@ -99,16 +135,6 @@ module Bosh::Director
 
               expect(last_response.status).to eq(400)
               expect(last_response.body).to eq('{"code":40000,"description":"\'limit\' is invalid: \'foo\' is not an integer"}')
-            end
-          end
-
-          context "when 'type' is not specified" do
-            let(:url_path) { '/?name=some-name&limit=1' }
-
-            it 'returns STATUS 404' do
-              get url_path
-
-              expect(last_response.status).to eq(404)
             end
           end
         end

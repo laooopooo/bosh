@@ -18,6 +18,36 @@ describe Bosh::Director::Api::ConfigManager do
     end
   end
 
+  describe '#list' do
+    before do
+      Bosh::Director::Models::Config.make
+      Bosh::Director::Models::Config.make(name: 'other-name')
+      Bosh::Director::Models::Config.make(name: 'new-name', type: 'new-type')
+    end
+
+    it 'returns names and types of all configs' do
+      configs = manager.list
+      expect(configs.count).to eq(3)
+    end
+
+    context 'when filtering' do
+      it 'returns only the elements with the given name' do
+        configs = manager.list(name: 'other-name')
+        expect(configs.count).to eq(1)
+      end
+
+      it 'returns only the elements with the given type' do
+        configs = manager.list(type: 'my-type')
+        expect(configs.count).to eq(2)
+      end
+
+      it 'returns no elements with no matches' do
+        configs = manager.list(type: 'foo', name: 'bar')
+        expect(configs.count).to eq(0)
+      end
+    end
+  end
+
   describe '#find_by_type_and_name' do
     it 'returns the content' do
       Bosh::Director::Models::Config.make(content: 'some-yaml')

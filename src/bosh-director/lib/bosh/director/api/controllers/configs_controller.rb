@@ -4,6 +4,14 @@ module Bosh::Director
   module Api::Controllers
     class ConfigsController < BaseController
 
+      get '/', scope: :admin do
+        configs = Bosh::Director::Api::ConfigManager.new.list(name: params['name'], type: params['type'])
+        result = configs.map do |config|
+          { name: config.name, type: config.type }
+        end
+        json_encode(result)
+      end
+
       get '/:type', scope: :read do
         if params['limit'].nil? || params['limit'].empty?
           raise ValidationMissingField, "'limit' is required"

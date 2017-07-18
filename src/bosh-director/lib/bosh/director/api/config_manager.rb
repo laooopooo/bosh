@@ -11,6 +11,13 @@ module Bosh
           config.save
         end
 
+        def list(type: nil, name: nil)
+          dataset = Bosh::Director::Models::Config
+          dataset = dataset.where(type: type) if type
+          dataset = dataset.where(name: name) if name
+          dataset.distinct.select(:type, :name).order(Sequel.desc(:id)).all
+        end
+
         def find_by_type_and_name(type, name = nil, limit:)
           name ||= ''
           Bosh::Director::Models::Config
