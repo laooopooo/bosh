@@ -56,15 +56,10 @@ module Bosh::Director
           authorize('admin', 'admin')
         end
 
-        it 'returns the number of configs specified by ?limit' do
+        it 'return the config' do
           Models::Config.make(
             content: 'some-yaml',
             created_at: Time.now - 3.days
-          )
-
-          Models::Config.make(
-            content: 'some-other-yaml',
-            created_at: Time.now - 2.days
           )
 
           newest_config = 'new_config'
@@ -73,11 +68,10 @@ module Bosh::Director
             created_at: Time.now - 1
           )
 
-          get '/my-type?name=some-name&limit=2'
+          get '/my-type?name=some-name'
 
           expect(last_response.status).to eq(200)
-          expect(JSON.parse(last_response.body).count).to eq(2)
-          expect(JSON.parse(last_response.body).first['content']).to eq(newest_config)
+          expect(JSON.parse(last_response.body)['content']).to eq(newest_config)
         end
 
         context 'when name is missing from the params' do
@@ -93,49 +87,11 @@ module Bosh::Director
             )
           end
 
-          let(:url_path) { '/my-type?limit=10' }
-
           it 'uses the default name' do
-            get url_path
+            get '/my-type'
 
             expect(last_response.status).to eq(200)
-            expect(JSON.parse(last_response.body).count).to eq(1)
-            expect(JSON.parse(last_response.body).first['content']).to eq('config-with-empty-name')
-          end
-        end
-
-        context 'when not all required parameters are provided' do
-          context "when 'limit' is not specified" do
-            let(:url_path) { '/my-type?name=some-name' }
-
-            it 'returns STATUS 400' do
-              get url_path
-
-              expect(last_response.status).to eq(400)
-              expect(last_response.body).to eq('{"code":40001,"description":"\'limit\' is required"}')
-            end
-          end
-
-          context "when 'limit' value is not given" do
-            let(:url_path) { '/my-type?name=some-name&limit=' }
-
-            it 'returns STATUS 400' do
-              get url_path
-
-              expect(last_response.status).to eq(400)
-              expect(last_response.body).to eq('{"code":40001,"description":"\'limit\' is required"}')
-            end
-          end
-
-          context "when 'limit' value is not an integer" do
-            let(:url_path) { '/my-type?name=some-name&limit=foo' }
-
-            it 'returns STATUS 400' do
-              get url_path
-
-              expect(last_response.status).to eq(400)
-              expect(last_response.body).to eq('{"code":40000,"description":"\'limit\' is invalid: \'foo\' is not an integer"}')
-            end
+            expect(JSON.parse(last_response.body)['content']).to eq('config-with-empty-name')
           end
         end
       end
@@ -150,7 +106,7 @@ module Bosh::Director
         before { basic_authorize('reader', 'reader') }
 
         it 'permits access' do
-          expect(get('/my-type?limit=1').status).to eq(200)
+          expect(get('/my-type').status).to eq(200)
         end
       end
     end

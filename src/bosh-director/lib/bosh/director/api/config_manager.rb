@@ -18,13 +18,12 @@ module Bosh
           dataset.distinct.select(:type, :name).order(Sequel.desc(:id)).all
         end
 
-        def find_by_type_and_name(type, name = nil, limit:)
+        def find_by_type_and_name(type, name = nil)
           name ||= ''
           Bosh::Director::Models::Config
               .where(type: type, name: name)
               .order(Sequel.desc(:id))
-              .limit(limit)
-              .all
+              .first
         end
       end
     end

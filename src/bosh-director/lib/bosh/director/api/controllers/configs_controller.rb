@@ -13,26 +13,13 @@ module Bosh::Director
       end
 
       get '/:type', scope: :read do
-        if params['limit'].nil? || params['limit'].empty?
-          raise ValidationMissingField, "'limit' is required"
-        end
-
-        begin
-          limit = Integer(params['limit'])
-        rescue ArgumentError
-          raise ValidationInvalidType, "'limit' is invalid: '#{params['limit']}' is not an integer"
-        end
-
-        configs = Bosh::Director::Api::ConfigManager.new.find_by_type_and_name(
+        config = Bosh::Director::Api::ConfigManager.new.find_by_type_and_name(
             params['type'],
-            params['name'],
-            limit: limit
+            params['name']
         )
 
-        result = configs.map do |config|
-          { content: config.content }
-        end
-
+        result = { content: nil }
+        result = { content: config.content } if config
         json_encode(result)
       end
 
